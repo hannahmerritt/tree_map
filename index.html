@@ -49,6 +49,11 @@
 
         // Add zoom and rotation controls
         map.addControl(new mapboxgl.NavigationControl());
+
+        map.addSource('trees', {
+            type: 'geojson',
+            data: 'data/seattle_trees.geojson'
+        });
     </script>
 
 </body>
