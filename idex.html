@@ -6,10 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Seattle Map</title>
+    <title>Tree Map</title>
 
-    <!-- Mapbox CSS -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
+    <link
+        href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css"
+        rel="stylesheet"
+    >
 
     <style>
         html,
@@ -29,25 +31,20 @@
 
 <body>
 
-    <!-- Map -->
     <div id="map"></div>
 
-    <!-- Mapbox JavaScript -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
 
     <script>
-        // Your Mapbox access token
         mapboxgl.accessToken = 'pk.eyJ1IjoiaG1lcnJpdHQxMSIsImEiOiJjbWhqcHRpOWgxMjA1MmxwbjdqY2x2dzdiIn0.Y0OZ2_z34S1hWXsgpOP19A';
 
-        // Create the map
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v12',
+            style: 'mapbox://styles/quwack-jones/cmifaipkf000101sq1p2ibnz2',
             center: [-122.3321, 47.6062],
             zoom: 11
         });
 
-        // Add zoom and rotation controls
         map.addControl(new mapboxgl.NavigationControl());
     </script>
 
