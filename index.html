@@ -47,6 +47,27 @@
             zoom: 11
         });
 
+        map.on('load', () => {
+    // Load the Ballard tree data
+            map.addSource('ballard-trees', {
+                type: 'geojson',
+                data: 'data/ballard_trees.geojson'
+            });
+        
+            // Display each tree as a circle
+            map.addLayer({
+                id: 'ballard-trees-points',
+                type: 'circle',
+                source: 'ballard-trees',
+                paint: {
+                    'circle-radius': 4,
+                    'circle-color': '#228B22',
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 0.5
+                }
+            });
+        });
+
         // Add zoom and rotation controls
         map.addControl(new mapboxgl.NavigationControl());
 
