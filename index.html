@@ -1,15 +1,17 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Seattle Map</title>
+    <title>Seattle Tree Map</title>
 
     <!-- Mapbox CSS -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
+    <link
+        href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css"
+        rel="stylesheet"
+    >
 
     <style>
         html,
@@ -25,52 +27,67 @@
             height: 100%;
         }
 
-         #help-button {
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            color: #000;
-            font-size: 16px;
+        #map-title {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
             font-weight: bold;
-            cursor: pointer;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Map -->
     <div id="map"></div>
+    <div id="map-title">Seattle Tree Map</div>
 
     <!-- Mapbox JavaScript -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
 
     <script>
-        // Your Mapbox access token
+        // Mapbox access token
         mapboxgl.accessToken = 'pk.eyJ1IjoiaG1lcnJpdHQxMSIsImEiOiJjbWhqcHRpOWgxMjA1MmxwbjdqY2x2dzdiIn0.Y0OZ2_z34S1hWXsgpOP19A';
 
         // Create the map
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-122.3321, 47.6062],
-            zoom: 11
+            center: [-122.382, 47.675],
+            zoom: 13
+        });
+
+        // Zoom and rotation buttons
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Load data after the basemap is ready
+        map.on('load', function () {
+
+            // 
+            // TREE COLORS
+            // 
 
             map.addSource('tree-grid', {
                 type: 'geojson',
-                data: 'https://raw.githubusercontent.com/hannahmerritt/tree_map/refs/heads/main/data/grid_points_trees_test_area.geojson%202'
+                data: 'data/grid_points_trees_test_area.geojson'
             });
 
             map.addLayer({
                 id: 'tree-grid-points',
                 type: 'circle',
                 source: 'tree-grid',
+
                 paint: {
+                    // Size of each grid point
                     'circle-radius': 7,
-            
+
+                    // Color based on the numeric category field
                     'circle-color': [
                         'match',
                         ['get', 'catgory'],
@@ -84,7 +101,9 @@
                         8, '#8d99ae',
                         '#cccccc'
                     ],
-            
+
+                    // More dominant tree = more opaque point
+                    // Ratio is stored from 0 to 1
                     'circle-opacity': [
                         'interpolate',
                         ['linear'],
@@ -92,43 +111,73 @@
                         0, 0.2,
                         1, 0.9
                     ],
-            
+
                     'circle-stroke-color': '#ffffff',
                     'circle-stroke-width': 0.5
                 }
             });
-        });
 
-        map.on('load', () => {
-            // Load the Ballard tree data
+            // Click a grid point to see its tree information
+            map.on('click', 'tree-grid-points', function (event) {
+                const properties = event.features[0].properties;
+
+                new mapboxgl.Popup()
+                    .setLngLat(event.lngLat)
+                    .setHTML(
+                        '<strong>Dominant tree:</strong> ' +
+                        (properties.COMMON_NAME || 'Unknown') +
+                        '<br><strong>Tree count:</strong> ' +
+                        (properties.count ?? 'Unknown') +
+                        '<br><strong>Share of trees:</strong> ' +
+                        (properties.Ratio != null
+                            ? (Number(properties.Ratio) * 100).toFixed(1) + '%'
+                            : 'Unknown') +
+                        '<br><strong>Category code:</strong> ' +
+                        (properties.catgory ?? 'Unknown')
+                    )
+                    .addTo(map);
+            });
+
+            map.on('mouseenter', 'tree-grid-points', function () {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'tree-grid-points', function () {
+                map.getCanvas().style.cursor = '';
+            });
+
+
+            //
+            //  TREE LOCATIONS
+            // 
+
             map.addSource('ballard-trees', {
                 type: 'geojson',
                 data: 'data/ballard_trees.geojson'
             });
-        
-            // Display each tree as a circle
+
             map.addLayer({
                 id: 'ballard-trees-points',
                 type: 'circle',
                 source: 'ballard-trees',
+
                 paint: {
-                    'circle-radius': 4,
+                    'circle-radius': 3,
                     'circle-color': '#228B22',
+                    'circle-opacity': 0.7,
                     'circle-stroke-color': '#ffffff',
-                    'circle-stroke-width': 0.5
+                    'circle-stroke-width': 0.3
                 }
             });
+
         });
 
-        // Add zoom and rotation controls
-        map.addControl(new mapboxgl.NavigationControl());
-
-        map.addSource('trees', {
-            type: 'geojson',
-            data: 'data/seattle_trees.geojson'
+        // Log loading errors in the browser console
+        map.on('error', function (event) {
+            console.error('Map error:', event.error);
         });
     </script>
 
 </body>
-
 </html>
+```
