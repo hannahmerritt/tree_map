@@ -40,6 +40,18 @@
             font-weight: bold;
             box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
         }
+        #layer-controls {
+            position: absolute;
+            top: 65px;
+            left: 15px;
+            z-index: 2;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+        }
     </style>
 </head>
 
@@ -47,6 +59,13 @@
 
     <div id="map"></div>
     <div id="map-title">Seattle Tree Map</div>
+
+    <div id="layer-controls">
+        <label>
+            <input type="checkbox" id="toggle-individual-trees" checked>
+            Show individual trees
+        </label>
+    </div>
 
     <!-- Mapbox JavaScript -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
@@ -169,6 +188,15 @@
                     'circle-stroke-width': 0.3
                 }
             });
+                // toggle individual trees on and off map
+            document.getElementById('toggle-individual-trees')
+                .addEventListener('change', function (event) {
+                    map.setLayoutProperty(
+                        'ballard-trees-points',
+                        'visibility',
+                        event.target.checked ? 'visible' : 'none'
+                    );
+                });
                // Click a tree to see its tree information
             map.on('click', 'ballard-trees-points', function (event) {
                 const properties = event.features[0].properties;
@@ -179,7 +207,7 @@
                         '<strong>tree:</strong> ' +
                         (properties.COMMON_NAME || 'Unknown') +
                         '<br><strong>Scientific name:</strong> ' +
-                        (properties.SCIENTIFIC_NAME ?? 'Unknown') +
+                        (properties.SCIENTIFIC_NAME ?? 'Unknown')
                     )
                     .addTo(map);
             });
