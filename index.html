@@ -169,6 +169,28 @@
                     'circle-stroke-width': 0.3
                 }
             });
+               // Click a tree to see its tree information
+            map.on('click', 'ballard-trees-points', function (event) {
+                const properties = event.features[0].properties;
+
+                new mapboxgl.Popup()
+                    .setLngLat(event.lngLat)
+                    .setHTML(
+                        '<strong>tree:</strong> ' +
+                        (properties.COMMON_NAME || 'Unknown') +
+                        '<br><strong>Scientific name:</strong> ' +
+                        (properties.SCIENTIFIC_NAME ?? 'Unknown') +
+                    )
+                    .addTo(map);
+            });
+
+            map.on('mouseenter', 'ballard-trees-points', function () {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'ballard-trees-points', function () {
+                map.getCanvas().style.cursor = '';
+            });
 
         });
 
