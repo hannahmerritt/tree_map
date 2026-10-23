@@ -45,6 +45,45 @@
             style: 'mapbox://styles/mapbox/streets-v12',
             center: [-122.3321, 47.6062],
             zoom: 11
+
+            map.addSource('tree-grid', {
+                type: 'geojson',
+                data: 'https://raw.githubusercontent.com/hannahmerritt/tree_map/refs/heads/main/data/grid_points_trees_test_area.geojson%202'
+            });
+
+            map.addLayer({
+                id: 'tree-grid-points',
+                type: 'circle',
+                source: 'tree-grid',
+                paint: {
+                    'circle-radius': 7,
+            
+                    'circle-color': [
+                        'match',
+                        ['get', 'catgory'],
+                        1, '#e76f51',
+                        2, '#e9c46a',
+                        3, '#2a9d8f',
+                        4, '#8ab17d',
+                        5, '#577590',
+                        6, '#b07aa1',
+                        7, '#6d597a',
+                        8, '#8d99ae',
+                        '#cccccc'
+                    ],
+            
+                    'circle-opacity': [
+                        'interpolate',
+                        ['linear'],
+                        ['to-number', ['get', 'Ratio']],
+                        0, 0.2,
+                        1, 0.9
+                    ],
+            
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 0.5
+                }
+            });
         });
 
         map.on('load', () => {
