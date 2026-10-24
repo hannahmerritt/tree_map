@@ -104,7 +104,16 @@
 
                 paint: {
                     // Size of each grid point
-                    'circle-radius': 7,
+                  'circle-radius': [
+                    'interpolate',
+                    ['exponential', 2],
+                    ['zoom'],
+                    10, 1.7,
+                    12, 6.8,
+                    14, 27.3,
+                    16, 109.2,
+                    18, 436.8
+                ],
 
                     // Color based on the numeric category field
                     'circle-color': [
