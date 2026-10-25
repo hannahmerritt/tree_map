@@ -145,22 +145,25 @@
             });
 
             // Click a grid point to see its tree information
+            // Click a grid point to see its tree information
             map.on('click', 'tree-grid-points', function (event) {
                 const properties = event.features[0].properties;
-
+            
                 new mapboxgl.Popup()
                     .setLngLat(event.lngLat)
                     .setHTML(
                         '<strong>Dominant tree:</strong> ' +
                         (properties.COMMON_NAME || 'Unknown') +
-                        '<br><strong>Tree count:</strong> ' +
+                        '<br><strong>Dominant tree count:</strong> ' +
                         (properties.count ?? 'Unknown') +
+                        '<br><strong>Total trees:</strong> ' +
+                        (properties.total_trees ?? 'Unknown') +
                         '<br><strong>Share of trees:</strong> ' +
                         (properties.ratio != null
                             ? (Number(properties.ratio) * 100).toFixed(1) + '%'
                             : 'Unknown') +
-                        '<br><strong>Category code:</strong> ' +
-                        (properties.catgory ?? 'Unknown')
+                        '<br><strong>Category:</strong> ' +
+                        (properties.TREE_CATEGORY || 'Unknown')
                     )
                     .addTo(map);
             });
