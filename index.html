@@ -92,9 +92,35 @@
             // TREE COLORS
             // 
 
+           const gridFiles = [
+                'data/Adams_grid.geojson',
+                'data/lh.geojson',
+            ];
+            
+            Promise.all(
+                gridFiles.map(file =>
+                    fetch(file).then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to load ${file}`);
+                        }
+                        return response.json();
+                    })
+                )
+            ).then(datasets => {
+                const combinedGrid = {
+                    type: 'FeatureCollection',
+                    features: datasets.flatMap(data => data.features)
+                };
+            
+                map.getSource('tree-grid').setData(combinedGrid);
+            }).catch(error => console.error(error));
+            
             map.addSource('tree-grid', {
                 type: 'geojson',
-                data: 'data/Adams_grid.geojson'
+                data: {
+                    type: 'FeatureCollection',
+                    features: []
+                }
             });
 
             map.addLayer({
