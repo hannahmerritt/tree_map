@@ -65,6 +65,11 @@
             <input type="checkbox" id="toggle-individual-trees" unchecked>
             Show individual trees
         </label>
+
+         <label>
+            <input type="checkbox" id="toggle-individual-trees" unchecked>
+            Show Heritage trees
+        </label>
     </div>
 
     <!-- Mapbox JavaScript -->
@@ -234,11 +239,42 @@
                     'circle-stroke-width': 0.3
                 }
             });
+            map.addSource('heritage-trees', {
+                type: 'geojson',
+                data: 'data/smaller_heritage.geojson'
+            });
+
+            map.addLayer({
+                id: 'heritage-trees-points',
+                type: 'circle',
+                source: 'heritage-trees',
+
+                 layout: {
+                    'visibility': 'none'
+                },
+
+                paint: {
+                    'circle-radius': 5,
+                    'circle-color': '#003B1D',
+                    'circle-opacity': 1,
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 0.3
+                }
+            });
                 // toggle individual trees on and off map
             document.getElementById('toggle-individual-trees')
                 .addEventListener('change', function (event) {
                     map.setLayoutProperty(
                         'ballard-trees-points',
+                        'visibility',
+                        event.target.checked ? 'visible' : 'none'
+                    );
+                });
+
+            document.getElementById('toggle-heritage-trees')
+                .addEventListener('change', function (event) {
+                    map.setLayoutProperty(
+                        'heritage-trees-points',
                         'visibility',
                         event.target.checked ? 'visible' : 'none'
                     );
@@ -258,6 +294,26 @@
                     .addTo(map);
             });
 
+            map.on('click', 'heritage-trees-points', function (event) {
+                const properties = event.features[0].properties;
+
+                new mapboxgl.Popup()
+                    .setLngLat(event.lngLat)
+                    .setHTML(
+                        '<strong>tree:</strong> ' +
+                        (properties.COMMON_NAME || 'Unknown') +
+                        '<br><strong>Scientific name:</strong> ' +
+                        (properties.SCIENTIFIC_NAME ?? 'Unknown') +
+                        '<br><strong>Last known diameter (inches):</strong> ' +
+                        (properties.DIAM ?? 'Unknown') +
+                        '<br><strong>Last known height (feet):</strong> ' +
+                        (properties.TREEHEIGHT ?? 'Unknown') +
+                        '<br><strong>Comments:</strong> ' +
+                        (properties.COMMENTS ?? 'Unknown') +
+                    )
+                    .addTo(map);
+            });
+
             map.on('mouseenter', 'ballard-trees-points', function () {
                 map.getCanvas().style.cursor = 'pointer';
             });
@@ -265,6 +321,15 @@
             map.on('mouseleave', 'ballard-trees-points', function () {
                 map.getCanvas().style.cursor = '';
             });
+
+            map.on('mouseenter', 'heritage-trees-points', function () {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'heritage-trees-points', function () {
+                map.getCanvas().style.cursor = '';
+            });
+
 
         });
 
