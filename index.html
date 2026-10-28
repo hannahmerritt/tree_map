@@ -56,294 +56,483 @@
             display: block;
             margin-bottom: 8px;
         }
+        
+        /* Overall layout */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* Left sidebar */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            height: 100vh;
+            background: #263b32;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        
+        #sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+        
+        /* Navigation buttons */
+        .nav-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 5px;
+            background: transparent;
+            color: white;
+            text-align: left;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .nav-button:hover,
+        .nav-button.active {
+            background: #476657;
+        }
+        
+        /* Main area beside the sidebar */
+        #main-content {
+            margin-left: 220px;
+            min-height: 100vh;
+        }
+        
+        /* Only show the selected page */
+        .page {
+            display: none;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* Map page */
+        #map-page {
+            position: relative;
+            height: 100vh;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #map {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+        
+        #map-title {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            z-index: 2;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        /* Layer controls */
+        #layer-controls {
+            position: absolute;
+            top: 65px;
+            left: 15px;
+            z-index: 2;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px #00000030;
+        }
+        
+        #layer-controls label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        /* Statistics cards */
+        .stat-card {
+            display: inline-block;
+            vertical-align: top;
+            width: 200px;
+            margin: 10px 10px 10px 0;
+            padding: 20px;
+            background: #f0f3f1;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        
+        .stat-card h3 {
+            margin-top: 0;
+        }
+
+        
     </style>
 </head>
 
+    <!--- // //////////////////// --->
+
 <body>
+    <!-- Side navigation -->
+    <div id="sidebar">
+        <h2>Seattle Tree Map</h2>
 
-    <div id="map"></div>
-    <div id="map-title">Seattle Tree Map</div>
+        <button class="nav-button active" data-page="map-page">
+            Map
+        </button>
 
-    <div id="layer-controls">
-        <label>
-            <input type="checkbox" id="toggle-individual-trees" unchecked>
-            Show individual trees
-        </label>
+        <button class="nav-button" data-page="info-page">
+            Information
+        </button>
 
-         <label>
-            <input type="checkbox" id="toggle-heritage-trees" unchecked>
-            Show Heritage trees
-        </label>
+        <button class="nav-button" data-page="stats-page">
+            Statistics
+        </button>
     </div>
 
-    <!-- Mapbox JavaScript -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+    <!-- Main content area -->
+    <div id="main-content">
 
-    <script>
-        // Mapbox access token
-        mapboxgl.accessToken = 'pk.eyJ1IjoiaG1lcnJpdHQxMSIsImEiOiJjbWhqcHRpOWgxMjA1MmxwbjdqY2x2dzdiIn0.Y0OZ2_z34S1hWXsgpOP19A';
+        <!-- MAP PAGE -->
+        <div id="map-page" class="page active">
+            <div id="map-title">Seattle Tree Map</div>
 
-        // Create the map
-        const map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-122.3321, 47.6062],
-            zoom: 10.5
-        });
+            <div id="map"></div>
 
-        // Zoom and rotation buttons
-        map.addControl(new mapboxgl.NavigationControl());
+            <div id="layer-controls">
+                <label>
+                    <input type="checkbox" id="toggle-individual-trees">
+                    Show individual trees
+                </label>
 
-        // Load data after the basemap is ready
-        map.on('load', function () {
+                 <label>
+                    <input type="checkbox" id="toggle-heritage-trees">
+                    Show Heritage trees
+                </label>
+            </div>
+        </div>
 
-            // 
-            // TREE COLORS
-            // 
-
-           const gridFiles = [
-                'data/Adams_grid.geojson',
-                'data/sh_grid2.geojson',
-                'data/lh_done.geojson',
-               'data/wh_pr_grid.geojson',
-               'data/wallingford_grid.geojson',
-               'data/freemont_grid.geojson',
-               'data/udist_grid.geojson',
-               'data/ww_grid.geojson'
-            ];
+        <!-- INFORMATION PAGE -->
+        <div id="info-page" class="page">
             
-            Promise.all(
-                gridFiles.map(file =>
-                    fetch(file).then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Failed to load ${file}`);
-                        }
-                        return response.json();
-                    })
-                )
-            ).then(datasets => {
-                const combinedGrid = {
-                    type: 'FeatureCollection',
-                    features: datasets.flatMap(data => data.features)
-                };
+        </div>
+
+        <!-- STATISTICS PAGE -->
+        <div id="stats-page" class="page">
             
-                map.getSource('tree-grid').setData(combinedGrid);
-            }).catch(error => console.error(error));
-            
-            map.addSource('tree-grid', {
-                type: 'geojson',
-                data: {
-                    type: 'FeatureCollection',
-                    features: []
-                }
+        </div>
+
+         <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+
+        <script>
+            // Mapbox access token
+            mapboxgl.accessToken = 'pk.eyJ1IjoiaG1lcnJpdHQxMSIsImEiOiJjbWhqcHRpOWgxMjA1MmxwbjdqY2x2dzdiIn0.Y0OZ2_z34S1hWXsgpOP19A';
+    
+            // Create the map
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: [-122.3321, 47.6062],
+                zoom: 10.5
             });
+    
+            // Zoom and rotation buttons
+            map.addControl(new mapboxgl.NavigationControl());
+    
+            // Load data after the basemap is ready
+            map.on('load', function () {
+    
+                // 
+                // TREE COLORS
+                // 
+    
+               const gridFiles = [
+                    'data/Adams_grid.geojson',
+                    'data/sh_grid2.geojson',
+                    'data/lh_done.geojson',
+                   'data/wh_pr_grid.geojson',
+                   'data/wallingford_grid.geojson',
+                   'data/freemont_grid.geojson',
+                   'data/udist_grid.geojson',
+                   'data/ww_grid.geojson'
+                ];
+                
+                
+                map.addSource('tree-grid', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
 
-            map.addLayer({
-                id: 'tree-grid-points',
-                type: 'circle',
-                source: 'tree-grid',
-
-                paint: {
-                    // Size of each grid point
-                  'circle-radius': [
-                    'interpolate',
-                    ['exponential', 2],
-                    ['zoom'],
-                    10, 1.7,
-                    12, 6.8,
-                    14, 27.3,
-                    16, 109.2,
-                    18, 436.8
-                ],
-
-                    // Color based on the numeric category field
-                    'circle-color': [
-                        'match',
-                        ['get', 'TREE_CATEGORY'],
-                        'Maple', '#e76f51',
-                        'Oak', '#577590',
-                        'Cherry & Other Flowering', '#FF52AF',
-                        'Conifers', '#2a9d8f',
-                        'Other Broadleaf', '#8ab17d',
-                        'Fruit & Nut', '#b07aa1',
-                        'Other / Unknown', '#64748B',
-                        '#cccccc'
-                    ],
-
-                    // More dominant tree = more opaque point
-                    // Ratio is stored from 0 to 1
-                    'circle-opacity': [
+                Promise.all(
+                    gridFiles.map(file =>
+                        fetch(file).then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Failed to load ${file}`);
+                            }
+                            return response.json();
+                        })
+                    )
+                ).then(datasets => {
+                    const combinedGrid = {
+                        type: 'FeatureCollection',
+                        features: datasets.flatMap(data => data.features)
+                    };
+                
+                    map.getSource('tree-grid').setData(combinedGrid);
+                }).catch(error => console.error(error));
+    
+                map.addLayer({
+                    id: 'tree-grid-points',
+                    type: 'circle',
+                    source: 'tree-grid',
+    
+                    paint: {
+                        // Size of each grid point
+                      'circle-radius': [
                         'interpolate',
-                        ['linear'],
-                        ['to-number', ['get', 'ratio']],
-                        0, 0.2,
-                        1, 0.9
+                        ['exponential', 2],
+                        ['zoom'],
+                        10, 1.7,
+                        12, 6.8,
+                        14, 27.3,
+                        16, 109.2,
+                        18, 436.8
                     ],
-
-                    'circle-stroke-color': '#ffffff',
-                    'circle-stroke-width': 0
-                }
+    
+                        // Color based on the numeric category field
+                        'circle-color': [
+                            'match',
+                            ['get', 'TREE_CATEGORY'],
+                            'Maple', '#e76f51',
+                            'Oak', '#577590',
+                            'Cherry & Other Flowering', '#FF52AF',
+                            'Conifers', '#2a9d8f',
+                            'Other Broadleaf', '#8ab17d',
+                            'Fruit & Nut', '#b07aa1',
+                            'Other / Unknown', '#64748B',
+                            '#cccccc'
+                        ],
+    
+                        // More dominant tree = more opaque point
+                        // Ratio is stored from 0 to 1
+                        'circle-opacity': [
+                            'interpolate',
+                            ['linear'],
+                            ['to-number', ['get', 'ratio']],
+                            0, 0.2,
+                            1, 0.9
+                        ],
+    
+                        'circle-stroke-color': '#ffffff',
+                        'circle-stroke-width': 0
+                    }
+                });
+    
+                // Click a grid point to see its tree information
+                // Click a grid point to see its tree information
+                map.on('click', 'tree-grid-points', function (event) {
+                    const properties = event.features[0].properties;
+                
+                    new mapboxgl.Popup()
+                        .setLngLat(event.lngLat)
+                        .setHTML(
+                            '<strong>Dominant tree:</strong> ' +
+                            (properties.COMMON_NAME || 'Unknown') +
+                            '<br><strong>Dominant tree count:</strong> ' +
+                            (properties.count ?? 'Unknown') +
+                            '<br><strong>Total trees:</strong> ' +
+                            (properties.total_trees ?? 'Unknown') +
+                            '<br><strong>Share of trees:</strong> ' +
+                            (properties.ratio != null
+                                ? (Number(properties.ratio) * 100).toFixed(1) + '%'
+                                : 'Unknown') +
+                            '<br><strong>Category:</strong> ' +
+                            (properties.TREE_CATEGORY || 'Unknown')
+                        )
+                        .addTo(map);
+                });
+    
+                map.on('mouseenter', 'tree-grid-points', function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+    
+                map.on('mouseleave', 'tree-grid-points', function () {
+                    map.getCanvas().style.cursor = '';
+                });
+    
+    
+                //
+                //  TREE LOCATIONS
+                // 
+    
+                map.addSource('ballard-trees', {
+                    type: 'geojson',
+                    data: 'data/ballard_trees.geojson'
+                });
+    
+                map.addLayer({
+                    id: 'ballard-trees-points',
+                    type: 'circle',
+                    source: 'ballard-trees',
+    
+                     layout: {
+                        'visibility': 'none'
+                    },
+    
+                    paint: {
+                        'circle-radius': 3,
+                        'circle-color': '#228B22',
+                        'circle-opacity': 0.7,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-stroke-width': 0.3
+                    }
+                });
+                map.addSource('heritage-trees', {
+                    type: 'geojson',
+                    data: 'data/smaller_heritage.geojson'
+                });
+    
+                map.addLayer({
+                    id: 'heritage-trees-points',
+                    type: 'circle',
+                    source: 'heritage-trees',
+    
+                     layout: {
+                        'visibility': 'none'
+                    },
+    
+                    paint: {
+                        'circle-radius': 5,
+                        'circle-color': '#009143',
+                        'circle-opacity': 1,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-stroke-width': 0.3
+                    }
+                });
+                    // toggle individual trees on and off map
+                document.getElementById('toggle-individual-trees')
+                    .addEventListener('change', function (event) {
+                        map.setLayoutProperty(
+                            'ballard-trees-points',
+                            'visibility',
+                            event.target.checked ? 'visible' : 'none'
+                        );
+                    });
+    
+                document.getElementById('toggle-heritage-trees')
+                    .addEventListener('change', function (event) {
+                        map.setLayoutProperty(
+                            'heritage-trees-points',
+                            'visibility',
+                            event.target.checked ? 'visible' : 'none'
+                        );
+                    });
+                   // Click a tree to see its tree information
+                map.on('click', 'ballard-trees-points', function (event) {
+                    const properties = event.features[0].properties;
+    
+                    new mapboxgl.Popup()
+                        .setLngLat(event.lngLat)
+                        .setHTML(
+                            '<strong>tree:</strong> ' +
+                            (properties.COMMON_NAME || 'Unknown') +
+                            '<br><strong>Scientific name:</strong> ' +
+                            (properties.SCIENTIFIC_NAME ?? 'Unknown')
+                        )
+                        .addTo(map);
+                });
+    
+                map.on('click', 'heritage-trees-points', function (event) {
+                    const properties = event.features[0].properties;
+    
+                    new mapboxgl.Popup()
+                        .setLngLat(event.lngLat)
+                        .setHTML(
+                            '<strong>tree:</strong> ' +
+                            (properties.COMMON_NAME || 'Unknown') +
+                            '<br><strong>Scientific name:</strong> ' +
+                            (properties.SCIENTIFIC_NAME ?? 'Unknown') +
+                            '<br><strong>Last known diameter (inches):</strong> ' +
+                            (properties.DIAM ?? 'Unknown') +
+                            '<br><strong>Last known height (feet):</strong> ' +
+                            (properties.TREEHEIGHT ?? 'Unknown') +
+                            '<br><strong>Comments:</strong> ' +
+                            (properties.COMMENTS ?? 'Unknown') 
+                        )
+                        .addTo(map);
+                });
+    
+                map.on('mouseenter', 'ballard-trees-points', function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+    
+                map.on('mouseleave', 'ballard-trees-points', function () {
+                    map.getCanvas().style.cursor = '';
+                });
+    
+                map.on('mouseenter', 'heritage-trees-points', function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+    
+                map.on('mouseleave', 'heritage-trees-points', function () {
+                    map.getCanvas().style.cursor = '';
+                });
+    
+    
             });
-
-            // Click a grid point to see its tree information
-            // Click a grid point to see its tree information
-            map.on('click', 'tree-grid-points', function (event) {
-                const properties = event.features[0].properties;
+    
+            // Log loading errors in the browser console
+            map.on('error', function (event) {
+                console.error('Map error:', event.error);
+            });
             
-                new mapboxgl.Popup()
-                    .setLngLat(event.lngLat)
-                    .setHTML(
-                        '<strong>Dominant tree:</strong> ' +
-                        (properties.COMMON_NAME || 'Unknown') +
-                        '<br><strong>Dominant tree count:</strong> ' +
-                        (properties.count ?? 'Unknown') +
-                        '<br><strong>Total trees:</strong> ' +
-                        (properties.total_trees ?? 'Unknown') +
-                        '<br><strong>Share of trees:</strong> ' +
-                        (properties.ratio != null
-                            ? (Number(properties.ratio) * 100).toFixed(1) + '%'
-                            : 'Unknown') +
-                        '<br><strong>Category:</strong> ' +
-                        (properties.TREE_CATEGORY || 'Unknown')
-                    )
-                    .addTo(map);
-            });
-
-            map.on('mouseenter', 'tree-grid-points', function () {
-                map.getCanvas().style.cursor = 'pointer';
-            });
-
-            map.on('mouseleave', 'tree-grid-points', function () {
-                map.getCanvas().style.cursor = '';
-            });
-
-
-            //
-            //  TREE LOCATIONS
-            // 
-
-            map.addSource('ballard-trees', {
-                type: 'geojson',
-                data: 'data/ballard_trees.geojson'
-            });
-
-            map.addLayer({
-                id: 'ballard-trees-points',
-                type: 'circle',
-                source: 'ballard-trees',
-
-                 layout: {
-                    'visibility': 'none'
-                },
-
-                paint: {
-                    'circle-radius': 3,
-                    'circle-color': '#228B22',
-                    'circle-opacity': 0.7,
-                    'circle-stroke-color': '#ffffff',
-                    'circle-stroke-width': 0.3
-                }
-            });
-            map.addSource('heritage-trees', {
-                type: 'geojson',
-                data: 'data/smaller_heritage.geojson'
-            });
-
-            map.addLayer({
-                id: 'heritage-trees-points',
-                type: 'circle',
-                source: 'heritage-trees',
-
-                 layout: {
-                    'visibility': 'none'
-                },
-
-                paint: {
-                    'circle-radius': 5,
-                    'circle-color': '#009143',
-                    'circle-opacity': 1,
-                    'circle-stroke-color': '#ffffff',
-                    'circle-stroke-width': 0.3
-                }
-            });
-                // toggle individual trees on and off map
-            document.getElementById('toggle-individual-trees')
-                .addEventListener('change', function (event) {
-                    map.setLayoutProperty(
-                        'ballard-trees-points',
-                        'visibility',
-                        event.target.checked ? 'visible' : 'none'
-                    );
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.addEventListener('click', function () {
+            
+                    // Hide all pages
+                    document.querySelectorAll('.page').forEach(page => {
+                        page.classList.remove('active');
+                    });
+            
+                    // Show the selected page
+                    document.getElementById(
+                        this.dataset.page
+                    ).classList.add('active');
+            
+                    // Update the selected menu button
+                    document.querySelectorAll('.nav-button').forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+            
+                    this.classList.add('active');
+            
+                    // Refresh Mapbox sizing when returning to the map
+                    if (this.dataset.page === 'map-page' && typeof map !== 'undefined') {
+                        map.resize();
+                    }
                 });
-
-            document.getElementById('toggle-heritage-trees')
-                .addEventListener('change', function (event) {
-                    map.setLayoutProperty(
-                        'heritage-trees-points',
-                        'visibility',
-                        event.target.checked ? 'visible' : 'none'
-                    );
-                });
-               // Click a tree to see its tree information
-            map.on('click', 'ballard-trees-points', function (event) {
-                const properties = event.features[0].properties;
-
-                new mapboxgl.Popup()
-                    .setLngLat(event.lngLat)
-                    .setHTML(
-                        '<strong>tree:</strong> ' +
-                        (properties.COMMON_NAME || 'Unknown') +
-                        '<br><strong>Scientific name:</strong> ' +
-                        (properties.SCIENTIFIC_NAME ?? 'Unknown')
-                    )
-                    .addTo(map);
             });
 
-            map.on('click', 'heritage-trees-points', function (event) {
-                const properties = event.features[0].properties;
+        </script>
 
-                new mapboxgl.Popup()
-                    .setLngLat(event.lngLat)
-                    .setHTML(
-                        '<strong>tree:</strong> ' +
-                        (properties.COMMON_NAME || 'Unknown') +
-                        '<br><strong>Scientific name:</strong> ' +
-                        (properties.SCIENTIFIC_NAME ?? 'Unknown') +
-                        '<br><strong>Last known diameter (inches):</strong> ' +
-                        (properties.DIAM ?? 'Unknown') +
-                        '<br><strong>Last known height (feet):</strong> ' +
-                        (properties.TREEHEIGHT ?? 'Unknown') +
-                        '<br><strong>Comments:</strong> ' +
-                        (properties.COMMENTS ?? 'Unknown') 
-                    )
-                    .addTo(map);
-            });
-
-            map.on('mouseenter', 'ballard-trees-points', function () {
-                map.getCanvas().style.cursor = 'pointer';
-            });
-
-            map.on('mouseleave', 'ballard-trees-points', function () {
-                map.getCanvas().style.cursor = '';
-            });
-
-            map.on('mouseenter', 'heritage-trees-points', function () {
-                map.getCanvas().style.cursor = 'pointer';
-            });
-
-            map.on('mouseleave', 'heritage-trees-points', function () {
-                map.getCanvas().style.cursor = '';
-            });
-
-
-        });
-
-        // Log loading errors in the browser console
-        map.on('error', function (event) {
-            console.error('Map error:', event.error);
-        });
-    </script>
+    </div>
 
 </body>
+    
+
 </html>
 ```
