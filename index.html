@@ -176,6 +176,65 @@
         .stat-card h3 {
             margin-top: 0;
         }
+        /* Statistics page layout */
+        .stats-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0 30px;
+        }
+        
+        .stat-card {
+            flex: 1 1 160px;
+            width: auto;
+            margin: 0;
+            padding: 20px;
+            background: #f0f3f1;
+            border-radius: 8px;
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: #52645a;
+        }
+        
+        .stat-card p {
+            font-size: 30px;
+            font-weight: bold;
+            margin: 10px 0 0;
+            color: #263b32;
+        }
+        
+        #category-stats {
+            margin-bottom: 35px;
+        }
+        
+        .category-row {
+            margin: 15px 0;
+        }
+        
+        .category-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        
+        .category-bar {
+            height: 14px;
+            background: #e5e9e6;
+            border-radius: 7px;
+            overflow: hidden;
+        }
+        
+        .category-fill {
+            height: 100%;
+            border-radius: 7px;
+        }
+        
+        #species-stats li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e5e1;
+        }
 
         
     </style>
@@ -230,6 +289,36 @@
 
         <!-- STATISTICS PAGE -->
         <div id="stats-page" class="page">
+            <h1>Seattle Tree Statistics</h1>
+                <p>Explore the distribution of dominant tree species
+                   across the mapped areas of Seattle.</p>
+            
+                <!-- Summary cards -->
+                <div class="stats-summary">
+                    <div class="stat-card">
+                        <h3>Grid Cells</h3>
+                        <p id="total-grid-cells">Loading...</p>
+                    </div>
+            
+                    <div class="stat-card">
+                        <h3>Tree Categories</h3>
+                        <p id="total-categories">Loading...</p>
+                    </div>
+            
+                    <div class="stat-card">
+                        <h3>Dominant Species</h3>
+                        <p id="total-species">Loading...</p>
+                    </div>
+                </div>
+                
+            
+                <!-- Category breakdown -->
+                <h2>Tree Categories</h2>
+                <div id="category-stats"></div>
+            
+                <!-- Most common species -->
+                <h2>Most Common Dominant Species</h2>
+                <ol id="species-stats"></ol>
             
         </div>
 
@@ -287,14 +376,122 @@
                             return response.json();
                         })
                     )
-                ).then(datasets => {
-                    const combinedGrid = {
-                        type: 'FeatureCollection',
-                        features: datasets.flatMap(data => data.features)
-                    };
-                
-                    map.getSource('tree-grid').setData(combinedGrid);
-                }).catch(error => console.error(error));
+                )
+                    .then(datasets => {
+                        const combinedGrid = {
+                            type: 'FeatureCollection',
+                            features: datasets.flatMap(data => data.features)
+                        };
+                    
+                        // Update the map
+                        map.getSource('tree-grid').setData(combinedGrid);
+                    
+                        // Calculate statistics
+                        const features = combinedGrid.features;
+                        const categoryCounts = {};
+                        const speciesCounts = {};
+                    
+                        features.forEach(feature => {
+                            const properties = feature.properties;
+                    
+                            const category =
+                                properties.TREE_CATEGORY || 'Other / Unknown';
+                    
+                            categoryCounts[category] =
+                                (categoryCounts[category] || 0) + 1;
+                    
+                            const species = properties.COMMON_NAME;
+                    
+                            if (species) {
+                                speciesCounts[species] =
+                                    (speciesCounts[species] || 0) + 1;
+                            }
+                        });
+                    
+                        // Update summary cards
+                        document.getElementById('total-grid-cells').textContent =
+                            features.length.toLocaleString();
+                    
+                        document.getElementById('total-categories').textContent =
+                            Object.keys(categoryCounts).length;
+                    
+                        document.getElementById('total-species').textContent =
+                            Object.keys(speciesCounts).length;
+                    
+                        // Category colors 
+                        const categoryColors = {
+                            'Maple': '#e76f51',
+                            'Oak': '#577590',
+                            'Cherry & Other Flowering': '#FF52AF',
+                            'Conifers': '#2a9d8f',
+                            'Other Broadleaf': '#8ab17d',
+                            'Fruit & Nut': '#b07aa1',
+                            'Other / Unknown': '#64748B'
+                        };
+                    
+                        // Display category breakdown
+                        const categoryContainer =
+                            document.getElementById('category-stats');
+                    
+                        const totalCells = features.length;
+                    
+                        categoryContainer.innerHTML = '';
+                    
+                        Object.entries(categoryCounts)
+                            .sort((a, b) => b[1] - a[1])
+                            .forEach(([category, count]) => {
+                                const percentage = totalCells
+                                    ? (count / totalCells) * 100
+                                    : 0;
+                    
+                                const color =
+                                    categoryColors[category] || '#cccccc';
+                    
+                                const row = document.createElement('div');
+                                row.className = 'category-row';
+                    
+                                const label = document.createElement('div');
+                                label.className = 'category-label';
+                    
+                                const name = document.createElement('span');
+                                name.textContent = category;
+                    
+                                const value = document.createElement('span');
+                                value.textContent =
+                                    `${count.toLocaleString()} cells (${percentage.toFixed(1)}%)`;
+                    
+                                label.append(name, value);
+                    
+                                const bar = document.createElement('div');
+                                bar.className = 'category-bar';
+                    
+                                const fill = document.createElement('div');
+                                fill.className = 'category-fill';
+                                fill.style.width = `${percentage}%`;
+                                fill.style.backgroundColor = color;
+                    
+                                bar.appendChild(fill);
+                                row.append(label, bar);
+                                categoryContainer.appendChild(row);
+                            });
+                    
+                        // Display top 10 dominant species
+                        const speciesContainer =
+                            document.getElementById('species-stats');
+                    
+                        speciesContainer.innerHTML = '';
+                    
+                        Object.entries(speciesCounts)
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 10)
+                            .forEach(([species, count]) => {
+                                const item = document.createElement('li');
+                                item.textContent =
+                                    `${species} — ${count.toLocaleString()} grid cells`;
+                                speciesContainer.appendChild(item);
+                            });
+                    })
+                    .catch(error => console.error('Error loading grid data:', error));
     
                 map.addLayer({
                     id: 'tree-grid-points',
